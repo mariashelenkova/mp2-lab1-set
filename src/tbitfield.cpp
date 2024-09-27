@@ -44,20 +44,8 @@ int TBitField::GetMemIndex(const int n) const // индекс Мем для би
 
 TELEM TBitField::GetMemMask(const int n) const // битовая маска для бита n
 {
-    if (n < 0 || n >= BitLen)
-        throw "Non equal size";
-
     TELEM res;
-
-    if (n < sizeof(TELEM) * 8)
-    {
-        res = 1 << (sizeof(TELEM) * 8 - n - 1);
-    }
-
-    else
-    {
-        res = 0;
-    }
+    res = TELEM(1) << (sizeof(TELEM) * 8 - n - 1);
 
     return res;
 }
@@ -74,8 +62,8 @@ void TBitField::SetBit(const int n) // установить бит
     if (n < 0 || n >= BitLen)
         throw "Non equal size";
 
-    int nVar = n / (sizeof(TELEM) * 8);
-    int nBit = n % (sizeof(TELEM) * 8);
+    long long nVar = n / (sizeof(TELEM) * 8);
+    long long nBit = n % (sizeof(TELEM) * 8);
     pMem[nVar] = pMem[nVar] | GetMemMask(nBit);
 }
 
@@ -155,10 +143,27 @@ int TBitField::operator!=(const TBitField &bf) const // сравнение
 TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 {
     TBitField res = TBitField(std::max(BitLen, bf.BitLen));
+
     for (int i = 0; i < std::min(MemLen, bf.MemLen); i++)
     {
         res.pMem[i] = pMem[i] | bf.pMem[i];
     }
+
+    if (MemLen > bf.MemLen)
+    {
+        for (int i = std::min(MemLen, bf.MemLen); i < std::max(MemLen, bf.MemLen); i++)
+        {
+            res.pMem[i] = pMem[i];
+        }
+    }
+    else
+    {
+        for (int i = std::min(MemLen, bf.MemLen); i < std::max(MemLen, bf.MemLen); i++)
+            res.pMem[i] = bf.pMem[i];
+    }
+
+
+
     return res;
 }
 
